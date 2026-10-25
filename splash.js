@@ -111,13 +111,13 @@
   setTimeout(hide, 7000);
 
   /* ===== Suara pembuka: ucapan "Dien" =====
-     Ucapan: "Dien ... By NSI".
-     1) Jika ada file rekaman dien-voice.mp3 di folder yang sama, file itu yang diputar (rekam "Dien, by NSI").
+     Ucapan: "Din ... By NSE". Ubah teks di VOICE_PARTS di bawah bila perlu.
+     1) Jika ada file rekaman dien-voice.mp3 di folder yang sama, file itu yang diputar (rekam "Din, by NSE").
      2) Jika tidak ada, ponsel mengucapkan VOICE_PARTS dengan suara bawaan (jeda VOICE_PAUSE ms).
      SOUND=false untuk mematikan. VOLUME 0-1. DELAY_MS = jeda sejak animasi mulai. */
   var SOUND = true, VOLUME = 1, DELAY_MS = 1300;
   var VOICE_FILE = 'dien-voice.mp3', VOICE_LANG = 'id-ID', VOICE_PAUSE = 450;
-  var VOICE_PARTS = [['Dien', 0.7, 1.05], ['By N S I', 0.85, 1.0]];
+  var VOICE_PARTS = [['Din', 0.7, 1.05], ['By N S E', 0.85, 1.0]];
 
   var muted = false;
   try { muted = localStorage.getItem('dien-snd') === '0'; } catch (e) {}
