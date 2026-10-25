@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Dien">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
 <style>:root{color-scheme:light;box-sizing:border-box}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
 <style>
@@ -139,7 +139,7 @@ nav button[aria-current="page"]{background:var(--accent-soft);color:var(--accent
   padding:0 max(12px,env(safe-area-inset-right,0px)) 8px max(12px,env(safe-area-inset-left,0px))}
 .cartbar button{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;max-width:760px;margin:0 auto;
   border:0;background:var(--accent);color:var(--on-accent);padding:13px 16px;border-radius:14px;font-weight:700;box-shadow:var(--shadow)}
-.sheetbg{position:fixed;inset:0;background:rgba(52,18,34,.5);z-index:30;display:flex;align-items:flex-end;justify-content:center}
+.sheetbg{position:fixed;top:0;left:0;right:0;bottom:0;inset:0;background:rgba(52,18,34,.5);z-index:30;display:flex;align-items:flex-end;justify-content:center}
 .sheet{background:var(--surface);width:100%;max-width:760px;max-height:88%;overflow:auto;border-radius:18px 18px 0 0;
   padding:18px max(16px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 .line{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--line)}
@@ -167,7 +167,7 @@ header{display:block;padding:14px 0 6px}
 .thl{position:relative;display:block;cursor:pointer;border-radius:16px}
 .pills{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .thl:focus-within{outline:2px solid var(--accent);outline-offset:2px}
-.fi{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0}
+.fi{position:absolute;top:0;left:0;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0}
 .thl .cam{position:absolute;right:-4px;bottom:-4px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--on-accent);font-size:16px;line-height:22px;text-align:center;font-weight:700;pointer-events:none;border:2px solid var(--surface)}
 .lt{display:flex;align-items:center;gap:10px;min-width:0}
 .lt .th{width:42px;height:54px;border-radius:12px;font-size:18px}
@@ -217,6 +217,9 @@ input,select,textarea{font-size:16px}
 .seg.three{display:grid;grid-template-columns:repeat(3,1fr)}
 .rl{margin:8px 0 12px;padding-left:22px;font-size:14px;line-height:1.5}.rl li{margin:7px 0}
 .rulescard{margin:12px 0}
+/* iOS: cegah halaman ter-zoom saat mengetik */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;touch-action:manipulation}
+input:not([type=file]):not([type=checkbox]):not([type=radio]),select,textarea{font-size:16px!important}
 /* varian, ukuran, galeri foto, bagikan */
 .dt.sel{position:relative;width:64px;height:64px;opacity:.55}
 .dt.sel.on{opacity:1}
@@ -230,13 +233,13 @@ td .vt{display:block}
 .form select,.editrow select,.sharebox select{padding:9px 10px;border:1px solid var(--line);border-radius:14px;background:var(--bg);color:var(--fg);font:inherit;min-width:0}
 .two select{width:78px;flex:none}
 .slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0}
-.slot{position:relative;aspect-ratio:1;border-radius:14px;border:1px solid var(--line);background:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px}
+.slot{position:relative;min-height:92px;aspect-ratio:1;border-radius:14px;border:1px solid var(--line);background:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px}
 .slot img{width:100%;height:100%;object-fit:contain;display:block}
 .slot.add{border:1.5px dashed var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer}
 .slot.add span{font-size:26px;line-height:1;font-weight:600}
 .slot small{font-size:11px;color:var(--muted)}.slot.add small{color:var(--accent);font-weight:600}
 .slot.empty{background:var(--bg);border-style:dashed;opacity:.6}
-.slot .fi{position:absolute;inset:0;width:100%;height:100%;opacity:0}
+.slot .fi{position:absolute;top:0;left:0;inset:0;width:100%;height:100%;opacity:0}
 .sx{position:absolute;top:4px;right:4px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(10,7,9,.72);color:#fff;font-size:17px;line-height:26px;padding:0;cursor:pointer}
 .dthumbs{display:flex;gap:8px;margin:8px 0 0}
 .dt{width:56px;height:56px;border-radius:12px;border:2px solid var(--line);background:#fff;padding:0;overflow:hidden;cursor:pointer}
