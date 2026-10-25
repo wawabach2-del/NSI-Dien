@@ -111,13 +111,17 @@
   setTimeout(hide, 7000);
 
   /* ===== Suara pembuka: ucapan "Dien" =====
-     1) Jika ada file rekaman dien-voice.mp3 di folder yang sama, file itu yang diputar.
-     2) Jika tidak ada, ponsel mengucapkan teks VOICE_TEXT dengan suara bawaan.
+     Ucapan: "Dien ... By NSI".
+     1) Jika ada file rekaman dien-voice.mp3 di folder yang sama, file itu yang diputar (rekam "Dien, by NSI").
+     2) Jika tidak ada, ponsel mengucapkan VOICE_PARTS dengan suara bawaan (jeda VOICE_PAUSE ms).
      SOUND=false untuk mematikan. VOLUME 0-1. DELAY_MS = jeda sejak animasi mulai. */
   var SOUND = true, VOLUME = 1, DELAY_MS = 1300;
-  var VOICE_FILE = 'dien-voice.mp3', VOICE_TEXT = 'Dien', VOICE_LANG = 'id-ID';
+  var VOICE_FILE = 'dien-voice.mp3', VOICE_LANG = 'id-ID', VOICE_PAUSE = 450;
+  var VOICE_PARTS = [['Dien', 0.7, 1.05], ['By N S I', 0.85, 1.0]];
 
-  if (SOUND) {
+  var muted = false;
+  try { muted = localStorage.getItem('dien-snd') === '0'; } catch (e) {}
+  if (SOUND && !muted) {
     var played = false, busy = false;
     var evs = ['pointerdown', 'touchstart', 'click', 'keydown'];
     var cleanup = function () { evs.forEach(function (n) { document.removeEventListener(n, onGesture, true); }); };
@@ -128,15 +132,19 @@
       try {
         var ss = window.speechSynthesis;
         if (!ss || !window.SpeechSynthesisUtterance) { busy = false; return; }
-        var u = new SpeechSynthesisUtterance(VOICE_TEXT);
-        u.lang = VOICE_LANG; u.rate = 0.7; u.pitch = 1.05; u.volume = VOLUME;
-        var vs = ss.getVoices() || [];
-        for (var i = 0; i < vs.length; i++) {
-          if (/^id/i.test(vs[i].lang)) { u.voice = vs[i]; break; }
-        }
-        u.onstart = ok;
-        u.onerror = function (e) { blocked(); };
-        ss.cancel(); ss.speak(u);
+        var vs = ss.getVoices() || [], idv = null;
+        for (var i = 0; i < vs.length; i++) { if (/^id/i.test(vs[i].lang)) { idv = vs[i]; break; } }
+        ss.cancel();
+        var say = function (n) {
+          if (n >= VOICE_PARTS.length) return;
+          var u = new SpeechSynthesisUtterance(VOICE_PARTS[n][0]);
+          u.lang = VOICE_LANG; u.rate = VOICE_PARTS[n][1]; u.pitch = VOICE_PARTS[n][2]; u.volume = VOLUME;
+          if (idv) u.voice = idv;
+          if (n === 0) { u.onstart = ok; u.onerror = function () { blocked(); }; }
+          u.onend = function () { setTimeout(function () { say(n + 1); }, VOICE_PAUSE); };
+          ss.speak(u);
+        };
+        say(0);
         setTimeout(function () { busy = false; }, 1500);
       } catch (e) { busy = false; }
     };

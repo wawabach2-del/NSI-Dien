@@ -217,6 +217,22 @@ input,select,textarea{font-size:16px}
 .seg.three{display:grid;grid-template-columns:repeat(3,1fr)}
 .rl{margin:8px 0 12px;padding-left:22px;font-size:14px;line-height:1.5}.rl li{margin:7px 0}
 .rulescard{margin:12px 0}
+/* motion perpindahan halaman */
+@media (prefers-reduced-motion:no-preference){
+#main.enter-r{animation:apInR .36s cubic-bezier(.2,.8,.2,1)}
+#main.enter-l{animation:apInL .36s cubic-bezier(.2,.8,.2,1)}
+#main.enter-u{animation:apInU .36s cubic-bezier(.2,.8,.2,1)}
+.rise{animation:apRise .5s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0)*32ms)}
+#sheet.fresh .sheetbg{animation:apFade .24s ease-out}
+#sheet.fresh .sheet{animation:apSheet .36s cubic-bezier(.2,.8,.2,1)}
+}
+@keyframes apInR{from{opacity:0;transform:translateX(32px)}}
+@keyframes apInL{from{opacity:0;transform:translateX(-32px)}}
+@keyframes apInU{from{opacity:0;transform:translateY(16px)}}
+@keyframes apRise{from{opacity:0;transform:translateY(14px) scale(.985)}}
+@keyframes apFade{from{opacity:0}}
+@keyframes apSheet{from{opacity:.4;transform:translateY(70px)}}
+.socrow .btn svg{width:16px;height:16px;vertical-align:-3px;margin-right:2px}
 /* iOS: cegah halaman ter-zoom saat mengetik */
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%;touch-action:manipulation}
 input:not([type=file]):not([type=checkbox]):not([type=radio]),select,textarea{font-size:16px!important}
@@ -453,7 +469,7 @@ var TK='dien-theme',themeSet=false;
 function getTheme(){try{return localStorage.getItem(TK)||'auto';}catch(e){return 'auto';}}
 function applyTheme(t){var r=document.documentElement;if(t==='auto'){if(themeSet){r.removeAttribute('data-theme');themeSet=false;}}else{r.setAttribute('data-theme',t);themeSet=true;}}
 function themeCard(){
-  return '<div class="card" style="margin:12px 0"><b>Tampilan</b><div class="note" style="margin:2px 0 8px">Pilih warna halaman. Putih untuk latar putih bersih.</div><div class="seg four" role="group" aria-label="Tema">'+[['auto','Otomatis'],['light','Blush'],['white','Putih'],['dark','Gelap']].map(function(t){return '<button type="button" data-act="theme" data-v="'+t[0]+'" aria-pressed="'+(getTheme()===t[0])+'">'+t[1]+'</button>';}).join('')+'</div></div>';
+  return '<div class="card" style="margin:12px 0"><b>Tampilan</b><div class="note" style="margin:2px 0 8px">Pilih warna halaman. Putih untuk latar putih bersih.</div><div class="seg four" role="group" aria-label="Tema">'+[['auto','Otomatis'],['light','Blush'],['white','Putih'],['dark','Gelap']].map(function(t){return '<button type="button" data-act="theme" data-v="'+t[0]+'" aria-pressed="'+(getTheme()===t[0])+'">'+t[1]+'</button>';}).join('')+'</div><div class="note" style="margin:10px 0 6px">Suara pembuka dan perpindahan halaman</div><div class="seg two" role="group" aria-label="Suara">'+[['1','Aktif'],['0','Mati']].map(function(t){return '<button type="button" data-act="snd" data-v="'+t[0]+'" aria-pressed="'+((t[0]==='1')===sndOn)+'">'+t[1]+'</button>';}).join('')+'</div></div>';
 }
 function logoCard(){
   updateStorage();
@@ -501,11 +517,50 @@ function shareRule(k,mode){
   else window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank','noopener');
 }
 
+/* ---------- nada perpindahan halaman (dibuat dari kode) ---------- */
+var SK='dien-snd',sndOn=true;try{sndOn=localStorage.getItem(SK)!=='0';}catch(e){}
+var sctxo=null;
+function sctx(){try{if(!sctxo){var AC=window.AudioContext||window.webkitAudioContext;if(AC)sctxo=new AC();}if(sctxo&&sctxo.state==='suspended')sctxo.resume();}catch(e){}return sctxo;}
+function blip(c,f,t,d,v){
+  var o=c.createOscillator(),g=c.createGain(),o2=c.createOscillator(),g2=c.createGain();
+  o.type='sine';o.frequency.value=f;o2.type='sine';o2.frequency.value=f*2;g2.gain.value=0.22;
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(v,t+0.012);g.gain.exponentialRampToValueAtTime(0.0001,t+d);
+  o.connect(g);o2.connect(g2);g2.connect(g);g.connect(c.destination);
+  o.start(t);o2.start(t);o.stop(t+d+0.05);o2.stop(t+d+0.05);
+}
+function sfx(kind,n){
+  if(!sndOn)return;var c=sctx();if(!c)return;var t=c.currentTime+0.01,V=0.11;
+  if(kind==='tab'){var b=[784,880,988,1109][n||0]||880;blip(c,b,t,0.14,V);blip(c,b*1.5,t+0.07,0.24,V*0.8);}
+  else if(kind==='open'){blip(c,659,t,0.12,V);blip(c,880,t+0.06,0.12,V);blip(c,1318,t+0.12,0.26,V);}
+  else if(kind==='close'){blip(c,1175,t,0.12,V);blip(c,784,t+0.07,0.22,V);}
+  else if(kind==='ok'){blip(c,784,t,0.1,V);blip(c,988,t+0.08,0.1,V);blip(c,1318,t+0.16,0.32,V);}
+}
+
+/* ---------- bagikan ke Instagram, TikTok, Facebook ---------- */
+var SOCIAL={ig:{n:'Instagram',url:'https://www.instagram.com/'},tt:{n:'TikTok',url:'https://www.tiktok.com/'},fb:{n:'Facebook',url:'https://www.facebook.com/'}};
+function socialText(p,tk){var t=fullName(p);if(tk)t+='\nHarga: '+rp(tp(p.price,TIERS[tk].d));if(p.desc)t+='\n\n'+p.desc;return t+'\n\n#Dien #DienByNSI';}
+function shareSocial(p,tk,idx,k){
+  var S=SOCIAL[k],all=gallery(p),g=(idx||[0]).map(function(i){return all[i];}).filter(Boolean),text=socialText(p,tk),files=[];
+  try{files=g.map(function(u,i){return dataToFile(u,slug(p.name)+'-'+((idx||[0])[i]+1)+'.jpg');});}catch(e){files=[];}
+  try{if(navigator.clipboard)navigator.clipboard.writeText(text);}catch(e){}
+  var box=$('dbox');
+  function fallback(msg){
+    if(box)box.innerHTML='<p class="note" style="margin:8px 0 4px">'+msg+'</p>'+(g.length?saveLinks(p,g,idx):'')+'<div class="row" style="margin-top:6px"><a class="btn gold sm" href="'+S.url+'" target="_blank" rel="noopener" style="text-decoration:none">Buka '+S.n+'</a></div>';
+    toast('Caption disalin');
+  }
+  if(!navigator.share){fallback('Caption sudah disalin. Simpan foto, lalu buat postingan di '+S.n+' dan tempel caption.');return;}
+  var can=true;if(files.length){try{can=!navigator.canShare||navigator.canShare({files:files});}catch(e){can=false;}}
+  if(!can){fallback('Browser ini belum bisa mengirim foto langsung. Caption sudah disalin. Simpan foto, lalu buat postingan di '+S.n+'.');return;}
+  toast('Caption disalin · pilih '+S.n+' di daftar');
+  var d={text:text};if(files.length)d.files=files;
+  navigator.share(d).catch(function(e){if(e&&e.name==='AbortError')return;fallback('Belum bisa dibagikan ('+((e&&e.name)||'error')+'). Caption sudah disalin. Simpan foto, lalu buat postingan di '+S.n+'.');});
+}
+
 function renderDetail(){
   var p=prod(ui.detail);if(!p){renderSheet(false);return;}
   var g=gallery(p),di=Math.min(ui.dph||0,Math.max(0,g.length-1)),u=g[di],ds=(ui.dsel||[0]).filter(function(i){return i<g.length;}),inCart=ui.cart[p.id]||0;
   var tiers=TIER_KEYS.map(function(k){var t=TIERS[k];return '<div class="line"><span>'+t.label+(t.d?' '+t.d+'%':'')+'</span><b class="num">'+rp(tp(p.price,t.d))+'</b></div>';}).join('');
-  var s=$('sheet');s.hidden=false;
+  var s=$('sheet'),wo=!s.hidden;s.hidden=false;s.className=wo?'':'fresh';if(!wo)sfx('open');
   s.innerHTML='<div class="sheetbg" id="sheetbg"><div class="sheet" role="dialog" aria-label="Detail produk">'+
    '<div class="row" style="justify-content:space-between"><span class="badge">'+esc(p.cat)+'</span><button class="btn sm" type="button" data-act="dclose">Tutup</button></div>'+
    (u?'<img class="dimg" src="'+u+'" alt="'+esc(p.name)+'">':'<div class="dimg dph" aria-hidden="true">'+esc(p.name.charAt(0))+'</div>')+
@@ -514,7 +569,7 @@ function renderDetail(){
    '<div class="dtext">'+(p.desc?esc(p.desc).replace(/\n/g,'<br>'):'<span class="note">Belum ada deskripsi. Tambahkan lewat tab Stok, tombol Ubah.</span>')+'</div>'+
    '<h2 style="font-size:15px;margin:14px 0 2px">Harga</h2>'+tiers+
    '<div class="row" style="margin-top:14px"><button class="btn primary" type="button" data-act="dadd" style="flex:1" '+(p.stock<=inCart?'disabled':'')+'>'+(inCart?'Tambah lagi · di keranjang '+inCart:'Tambah ke keranjang')+'</button><button class="btn" type="button" data-act="dcopy">Salin info</button></div>'+
-   '<div class="card sharebox"><b>Bagikan ke WhatsApp</b><div class="note" style="margin:2px 0 8px">Hanya foto yang Anda pilih yang dikirim, bersama info produk. Pilih WhatsApp di daftar aplikasi yang muncul.</div>'+(g.length?'<div class="shl">Foto yang dikirim · '+ds.length+' dipilih (ketuk untuk memilih)</div><div class="dthumbs" style="margin:4px 0 10px">'+g.map(function(x,i){var on=ds.indexOf(i)>=0;return '<button type="button" class="dt sel'+(on?' on':'')+'" data-act="dsel" data-i="'+i+'" aria-pressed="'+on+'" aria-label="Foto '+(i+1)+(on?' dipilih':'')+'"><img src="'+x+'" alt=""><span class="ck" aria-hidden="true">✓</span></button>';}).join('')+'</div>':'')+'<label class="shl">Cantumkan harga<select id="stier"><option value=""'+(ui.dtier===''?' selected':'')+'>Tanpa harga</option>'+TIER_KEYS.map(function(k){return '<option value="'+k+'"'+(k===(ui.dtier===undefined?ui.tier:ui.dtier)?' selected':'')+'>'+TIERS[k].label+(TIERS[k].d?' '+TIERS[k].d+'%':'')+'</option>';}).join('')+'</select></label><button class="btn gold" type="button" data-act="dshare" style="width:100%;margin-top:8px">Bagikan '+(ds.length?ds.length+' foto + info':'info')+' ke WhatsApp</button></div><div id="dbox"></div>'+
+   '<div class="card sharebox"><b>Bagikan ke WhatsApp</b><div class="note" style="margin:2px 0 8px">Hanya foto yang Anda pilih yang dikirim, bersama info produk. Pilih WhatsApp di daftar aplikasi yang muncul.</div>'+(g.length?'<div class="shl">Foto yang dikirim · '+ds.length+' dipilih (ketuk untuk memilih)</div><div class="dthumbs" style="margin:4px 0 10px">'+g.map(function(x,i){var on=ds.indexOf(i)>=0;return '<button type="button" class="dt sel'+(on?' on':'')+'" data-act="dsel" data-i="'+i+'" aria-pressed="'+on+'" aria-label="Foto '+(i+1)+(on?' dipilih':'')+'"><img src="'+x+'" alt=""><span class="ck" aria-hidden="true">✓</span></button>';}).join('')+'</div>':'')+'<label class="shl">Cantumkan harga<select id="stier"><option value=""'+(ui.dtier===''?' selected':'')+'>Tanpa harga</option>'+TIER_KEYS.map(function(k){return '<option value="'+k+'"'+(k===(ui.dtier===undefined?ui.tier:ui.dtier)?' selected':'')+'>'+TIERS[k].label+(TIERS[k].d?' '+TIERS[k].d+'%':'')+'</option>';}).join('')+'</select></label><button class="btn gold" type="button" data-act="dshare" style="width:100%;margin-top:8px">Bagikan '+(ds.length?ds.length+' foto + info':'info')+' ke WhatsApp</button><div class="shl" style="margin-top:12px">Bagikan ke media sosial (caption otomatis disalin)</div><div class="row socrow" style="margin-top:6px">'+['ig','tt','fb'].map(function(k){var sc=SOC.filter(function(x){return x[0]===k;})[0];return '<button class="btn sm" type="button" data-act="dsoc" data-v="'+k+'">'+sc[2]+' '+sc[1]+'</button>';}).join('')+'</div></div><div id="dbox"></div>'+
    '</div></div>';
 }
 function backupCard(){return '<div class="card" style="margin:12px 0"><b>Cadangan data</b><div class="note" style="margin:2px 0 8px">Stok, transaksi, dan foto tersimpan di browser ini saja. Salin cadangan secara berkala dan simpan di catatan atau chat pribadi.</div><div class="row"><button class="btn primary sm" type="button" data-act="bkcopy">Salin cadangan</button><button class="btn sm" type="button" data-act="bkopen">Pulihkan dari cadangan</button></div><div id="bkbox"></div></div>';}
@@ -550,10 +605,10 @@ function renderCartBar(){
   b.hidden=false;b.innerHTML='<button id="opencart" type="button"><span>Keranjang · '+n+' item</span><span class="num">'+rp(cartTotal())+'</span></button>';
 }
 function renderSheet(open){
-  var s=$('sheet');
-  if(!open){s.hidden=true;s.innerHTML='';return;}
+  var s=$('sheet'),wo=!s.hidden;
+  if(!open){if(wo)sfx('close');s.hidden=true;s.innerHTML='';s.className='';return;}
   var L=cartLines(),t=TIERS[ui.tier];
-  s.hidden=false;
+  s.hidden=false;s.className=wo?'':'fresh';if(!wo)sfx('open');
   s.innerHTML='<div class="sheetbg" id="sheetbg"><div class="sheet" role="dialog" aria-label="Keranjang">'+
    '<div class="row" style="justify-content:space-between"><h2 style="margin:0">Keranjang</h2><button class="btn sm" id="closecart" type="button">Tutup</button></div>'+
    '<p class="note">Harga '+esc(t.label)+(t.d?' (diskon '+t.d+'%)':' (harga normal)')+'</p>'+
@@ -800,7 +855,7 @@ function waGroupHtml(g,gi){
     lines+'<div class="line" style="align-items:baseline"><span>Subtotal</span><b class="num">'+rp(sub)+'</b></div><div class="row" style="margin-top:8px"><button class="btn primary sm" type="button" data-act="watocart" data-g="'+gi+'" style="flex:1">Masukkan ke keranjang Kasir</button></div></div>';
 }
 function renderWa(){
-  var s=$('sheet'),w=ui.wa,old=s.querySelector('.sheet'),top=old?old.scrollTop:0,gs=w.groups||[],all=0,h;
+  var s=$('sheet'),wo=!s.hidden,w=ui.wa,old=s.querySelector('.sheet'),top=old?old.scrollTop:0,gs=w.groups||[],all=0,h;
   gs.forEach(function(g){var d=TIERS[g.tier].d;g.lines.forEach(function(l){var p=l.pid?prod(l.pid):null;if(p)all+=tp(p.price,d)*l.q;});});
   var probs=gs.length?waProblems():[];
   h='<div class="sheetbg" id="sheetbg"><div class="sheet" role="dialog" aria-label="Pesanan WhatsApp">'+
@@ -819,7 +874,7 @@ function renderWa(){
     }
   }
   h+='</div></div>';
-  s.hidden=false;s.innerHTML=h;
+  s.hidden=false;s.className=wo?'':'fresh';if(!wo)sfx('open');s.innerHTML=h;
   var nw=s.querySelector('.sheet');if(nw)nw.scrollTop=top;
 }
 function waSave(){
@@ -847,11 +902,20 @@ function waSave(){
 var NAV=[['kasir','Kasir'],['harga','Price List'],['stok','Stok'],['laporan','Laporan']];
 var NI={kasir:'<path d="M6 8h12l-1 11H7L6 8z"/><path d="M9 8a3 3 0 0 1 6 0"/>',harga:'<path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="8.5" r="1.2"/>',stok:'<path d="M3 8l9-5 9 5v8l-9 5-9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/>',laporan:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'};
 function renderNav(){$('nav').innerHTML=NAV.map(function(n){return '<button type="button" data-act="tab" data-v="'+n[0]+'"'+(ui.tab===n[0]?' aria-current="page"':'')+'><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+NI[n[0]]+'</svg><span>'+n[1]+'</span></button>';}).join('');}
+var lastTab=null;
+function animateEnter(dir){
+  var m=$('main');if(!m)return;
+  m.classList.remove('enter-r','enter-l','enter-u');void m.offsetWidth;
+  m.classList.add(dir>0?'enter-r':dir<0?'enter-l':'enter-u');
+  Array.prototype.forEach.call(m.querySelectorAll('.item,.card,.tile,.form,.controls,.scroll,h2'),function(e,i){if(i<14){e.style.setProperty('--i',i);e.classList.add('rise');}});
+}
 function render(){
   renderNav();
   var v=views[ui.tab];
   $('main').innerHTML=v.controls()+'<div id="list"></div>';
   refresh();renderCartBar();
+  if(lastTab!==ui.tab||ui.animForm){var ks=NAV.map(function(n){return n[0];});animateEnter(lastTab===null||lastTab===ui.tab?0:ks.indexOf(ui.tab)-ks.indexOf(lastTab));}
+  lastTab=ui.tab;ui.animForm=false;
 }
 function refresh(){$('list').innerHTML=views[ui.tab].list();}
 $('today').textContent=fmtDate(today());applyTheme(getTheme());renderLogo();renderSocial();
@@ -865,6 +929,8 @@ document.addEventListener('click',function(e){
   if(el.id==='savetx'){saveTx();return;}
   if(el.id==='clearcart'){ui.cart={};renderSheet(false);render();return;}
   var a=el.dataset.act,id=el.dataset.id,v=el.dataset.v,p=id?prod(id):null;
+  var SFXM={tab:'tab',addtoggle:'open',edit:'open',rulestoggle:'open',rulestab:'tab',addsave:'ok',esave:'ok',wasave:'ok'};
+  if(SFXM[a])sfx(SFXM[a],a==='tab'?NAV.map(function(n){return n[0];}).indexOf(v):(a==='rulestab'?RULE_KEYS.indexOf(v):0));
   switch(a){
    case 'tab':ui.tab=v;ui.q='';ui.cat='Semua';ui.confirm=null;ui.editing=null;render();window.scrollTo(0,0);break;
    case 'tier':ui.tier=v;render();break;
@@ -893,7 +959,7 @@ document.addEventListener('click',function(e){
    case 'copywa':copy(cartMsg(),'Pesan disalin. Tempel di WhatsApp.','wabox');break;
    case 'copytx':var tt=state.tx.find(function(x){return x.id===id;});if(tt)copy(waMsg(tt.items,tt.total,tt.customer,tt.tier),'Pesan disalin. Tempel di WhatsApp.','exportbox');break;
    case 'copyprice':copy(priceText(v),'Price list '+TIERS[v].label+' disalin','pbox');break;
-   case 'addtoggle':ui.adding=!ui.adding;ui.newImgs=[];ui.editing=null;render();window.scrollTo(0,0);break;
+   case 'addtoggle':ui.adding=!ui.adding;ui.newImgs=[];ui.editing=null;ui.animForm=true;render();window.scrollTo(0,0);break;
    case 'addsave':
      var nm=$('nn').value.trim(),c=$('nc').value.trim()||'Lainnya',pr=parseInt($('np').value,10),st=parseInt($('ns').value,10)||0;
      if(!nm||!(pr>=0)||isNaN(pr)){toast('Isi nama dan harga barang');break;}
@@ -911,7 +977,7 @@ document.addEventListener('click',function(e){
    case 'edel':
      state.products=state.products.filter(function(x){return x.id!==id;});delete ui.cart[id];save();ui.editing=null;ui.confirm=null;toast('Barang dihapus');render();break;
    case 'detail':ui.detail=id;ui.dph=0;ui.dsel=[0];ui.dtier=undefined;renderDetail();break;
-   case 'rulestoggle':ui.rulesOpen=!ui.rulesOpen;render();break;
+   case 'rulestoggle':ui.rulesOpen=!ui.rulesOpen;ui.animForm=true;render();break;
    case 'rulestab':ui.rule=v;render();break;
    case 'rulecopy':copy(rulesText(ui.rule||'agen'),'Ketentuan disalin. Tempel di WhatsApp.','rbox');break;
    case 'ruletext':shareRule(ui.rule||'agen','text');break;
@@ -919,6 +985,8 @@ document.addEventListener('click',function(e){
    case 'dph':if($('stier'))ui.dtier=$('stier').value;ui.dph=+el.dataset.i;renderDetail();break;
    case 'dsel':if($('stier'))ui.dtier=$('stier').value;var si=+el.dataset.i;ui.dsel=ui.dsel||[0];var sk=ui.dsel.indexOf(si);if(sk>=0)ui.dsel.splice(sk,1);else ui.dsel.push(si);ui.dsel.sort();renderDetail();break;
    case 'dwatext':window.open('https://wa.me/?text='+encodeURIComponent(ui.lastShareText||''),'_blank','noopener');break;
+   case 'dsoc':var sp3=prod(ui.detail);if(sp3)shareSocial(sp3,($('stier')||{}).value||'',ui.dsel||[0],v);break;
+   case 'snd':sndOn=(v==='1');try{localStorage.setItem(SK,sndOn?'1':'0');}catch(e){}if(sndOn)sfx('ok');render();break;
    case 'dshare':var sp=prod(ui.detail);if(sp)shareProduct(sp,($('stier')||{}).value||'',ui.dsel||[0]);break;
    case 'pslotdel':if(id==='new'){(ui.newImgs||[]).splice(+el.dataset.i,1);refreshSlots('new');break;}var sq=prod(id);if(sq){var sa=gallery(sq).slice();sa.splice(+el.dataset.i,1);setGallery(id,sa);persist('Foto dihapus');refreshSlots(id);}break;
    
