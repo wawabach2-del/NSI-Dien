@@ -110,21 +110,11 @@
   else window.addEventListener('load', ready);
   setTimeout(hide, 7000);
 
-  /* ===== Suara pembuka: sapaan santai =====
-     Sapaan dipilih acak dari VOICE_SETS di bawah. Ubah atau tambah kalimat sesuai selera.
-     1) Jika ada file rekaman dien-voice.mp3 di folder yang sama, file itu yang diputar (rekam "Din, by NSE").
-     2) Jika tidak ada, ponsel mengucapkan VOICE_PARTS dengan suara bawaan (jeda VOICE_PAUSE ms).
-     SOUND=false untuk mematikan. VOLUME 0-1. DELAY_MS = jeda sejak animasi mulai. */
+  /* ===== Suara pembuka: memutar rekaman dien-voice.m4a (satu folder dengan index.html).
+     Ganti suaranya dengan menimpa file dien-voice.m4a. ===== */
   var SOUND = true, VOLUME = 1, DELAY_MS = 1300;
-  var VOICE_FILE = 'dien-voice.mp3', VOICE_LANG = 'id-ID', VOICE_PAUSE = 220;
-  /* [teks, kecepatan, nada] */
-  var VOICE_SETS = [
-    [['Hai kak!', 1.05, 1.3], ['Dien siap bantu jualan nih!', 1.08, 1.25]],
-    [['Halo kak!', 1.05, 1.3], ['Semangat jualannya ya!', 1.08, 1.25]],
-    [['Hai hai!', 1.08, 1.3], ['Yuk, kita mulai jualan!', 1.08, 1.25]],
-    [['Halo kak, selamat datang!', 1.06, 1.28], ['Yuk, cuan hari ini!', 1.1, 1.25]]
-  ];
-  var VOICE_PARTS = VOICE_SETS[Math.floor(Math.random() * VOICE_SETS.length)];
+  var VOICE_FILE = 'dien-voice.m4a', VOICE_LANG = 'id-ID', VOICE_PAUSE = 450;
+  var VOICE_PARTS = [['Din', 0.7, 1.05], ['By N S E', 0.85, 1.0]];
 
   var muted = false;
   try { muted = localStorage.getItem('dien-snd') === '0'; } catch (e) {}
@@ -166,10 +156,10 @@
         if (p && p.then) {
           p.then(ok, function (err) {
             if (err && err.name === 'NotAllowedError') blocked();
-            else speak();
+            else blocked();
           });
         } else { ok(); }
-      } catch (e) { speak(); }
+      } catch (e) { blocked(); }
     };
     var onGesture = function () { attempt(); };
 
